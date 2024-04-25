@@ -79,7 +79,7 @@ export default defineComponent({
 			};
 
 			if (selectedPhoneNumber.value) {
-				params.phoneNumberId = selectedPhoneNumber.value;
+				params.phoneNumberId = selectedPhoneNumber.value.id;
 			}
 
 			try {

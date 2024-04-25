@@ -98,7 +98,7 @@ export default defineComponent({
 			errorMessage.value = '';
 			try {
 				await userStore.login(email.value, password.value);
-				router.push({ name: routeNames.dashboard });
+				router.push({ path: '/' });
 			} catch(error) {
 				console.error('Login failed:', error);
 				errorMessage.value = 'Failed to login. Check your credentials.';

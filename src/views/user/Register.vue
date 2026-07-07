@@ -69,6 +69,11 @@
 					class="w-full mb-3" 
 					input-class="w-full mb-3"
 				/>
+				<div v-if="errorMessage" class="flex align-items-center justify-content-center mb-3">
+					<div class="flex align-items-center p-error">
+						{{ errorMessage }}
+					</div>
+				</div>
 				<Button 
 					type="submit"
 					label="Register" 
@@ -86,6 +91,7 @@ import { defineComponent, ref } from 'vue';
 import { useUserStore } from '../../stores/user';
 import { useRouter } from 'vue-router';
 import { routeNames } from '@/router/route-names';
+import { getApiErrorMessage } from '@/utils/toast';
 
 export default defineComponent({
 	name: 'Register',
@@ -108,7 +114,7 @@ export default defineComponent({
 				router.push({ name: routeNames.unauthorized });
 			} catch(error) {
 				console.error('Registration failed:', error);
-				errorMessage.value = 'Failed to register new account.';
+				errorMessage.value = getApiErrorMessage(error, 'Failed to register new account.');
 			} finally {
 				loading.value = false;
 			}

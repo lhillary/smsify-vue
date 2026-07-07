@@ -54,6 +54,7 @@ import { useContactsStore } from '@/stores/contact';
 import { useSmsStore } from '@/stores/sms';
 import { ResponseLog } from '@/interfaces/general';
 import { calculateTimeDifference } from '@/utils/general';
+import { showErrorToast } from '@/utils/toast';
 
 export default defineComponent({
 	name: 'CampaignResponses',
@@ -105,6 +106,7 @@ export default defineComponent({
 				await contactsStore.fetchCampaignContacts(campaignId);
 			} catch(error) {
 				console.error('Failed to fetch contacts:', error);
+				showErrorToast('Failed to load contacts', error);
 			} finally {
 				contactsLoading.value = false;
 			}
@@ -116,6 +118,7 @@ export default defineComponent({
 				await smsStore.getResponsesByCampaign(campaignId);
 			} catch(error) {
 				console.error('Failed to fetch responses:', error);
+				showErrorToast('Failed to load responses', error);
 			} finally {
 				responsesLoading.value = false;
 			}
@@ -126,7 +129,8 @@ export default defineComponent({
 			try {
 				await smsStore.getMessagesByCampaign(campaignId);
 			} catch(error) {
-				console.error('Failed to fetch responses:', error);
+				console.error('Failed to fetch messages:', error);
+				showErrorToast('Failed to load messages', error);
 			} finally {
 				messagesLoading.value = false;
 			}

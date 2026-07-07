@@ -38,6 +38,7 @@ import { routeNames } from '@/router/route-names';
 import { useUserStore } from '@/stores/user';
 import Spinner from '../../components/general/Loader.vue';
 import { type ApiV1UserUpdatePutRequest } from '@/api-client';
+import { showErrorToast } from '@/utils/toast';
 
 export default defineComponent({
 	name: 'UserProfile',
@@ -70,8 +71,10 @@ export default defineComponent({
 			}
 			try {
 				await userStore.update(params);
+				editMode.value = false;
 			} catch(error) {
 				console.error('Failed to update profile:', error);
+				showErrorToast('Failed to update profile', error);
 			} finally {
 				loading.value = false;
 			}

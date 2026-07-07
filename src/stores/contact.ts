@@ -26,8 +26,10 @@ export const useContactsStore = defineStore('contact', {
 			return new Promise((resolve, reject) => {
 				contactsApi.apiV1ContactGet()
 					.then((response) => {
-						this.allContacts = response.data;
-						resolve(response.data);
+						// The API soft-deletes and still returns deleted rows.
+						const contacts = response.data.filter((contact) => !contact.deletedAt);
+						this.allContacts = contacts;
+						resolve(contacts);
 					})
 					.catch((error) => {
 						console.error('Failed getting contacts:', error);
@@ -39,8 +41,10 @@ export const useContactsStore = defineStore('contact', {
 			return new Promise((resolve, reject) => {
 				contactsApi.apiV1ContactByCampaignCampaignIdGet(campaignId)
 					.then((response) => {
-						this.campaignContacts = response.data;
-						resolve(response.data);
+						// The API soft-deletes and still returns deleted rows.
+						const contacts = response.data.filter((contact) => !contact.deletedAt);
+						this.campaignContacts = contacts;
+						resolve(contacts);
 					})
 					.catch((error) => {
 						console.error('Failed getting contacts:', error);

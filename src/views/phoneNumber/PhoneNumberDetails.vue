@@ -28,12 +28,20 @@
 				<div v-else class="field mb-4 col-12">
 					<DataTable 
 						:value="phoneNumbers" 
+						:rowClass="phoneNumberRowClass"
 						scrollable 
 						scrollHeight="400px"
 					>
 						<Column field="phoneNumber" header="Phone Number"></Column>
 						<Column field="country" header="Country"></Column>
-						<Column field="isActive" header="Active"></Column>
+						<Column field="isActive" header="Status">
+							<template #body="slotProps">
+								<Tag
+									:value="slotProps.data.isActive ? 'Active' : 'Inactive'"
+									:severity="slotProps.data.isActive ? 'success' : 'secondary'"
+								></Tag>
+							</template>
+						</Column>
 						<Column bodyStyle="width: 4rem; text-align: center;">
 							<template #body="slotProps">
 								<Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="confirmDeleteNumber(slotProps.data.phoneNumberId)" />
@@ -51,8 +59,9 @@
 import { defineComponent, ref, computed } from 'vue';
 import { usePhoneNumberStore } from '@/stores/phoneNumbers';
 import Spinner from '../../components/general/Loader.vue';
-import { type ApiV1PhoneNumberAvailableNumbersGet200ResponseInner, type ApiV1PhoneNumberPurchaseNumberPostRequest } from '@/api-client';
+import { type ApiV1PhoneNumberAvailableNumbersGet200ResponseInner, type ApiV1PhoneNumberPurchaseNumberPostRequest, type PhoneNumber } from '@/api-client';
 import { useConfirm } from 'primevue/useconfirm';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 
 interface AutocompleteEvent {
   query: string;
@@ -75,6 +84,7 @@ export default defineComponent({
 				await phoneNumberStore.fetchAllPhoneNumbers();
 			} catch(error) {
 				console.error('Failed to fetch phone numbers:', error);
+				showErrorToast('Failed to load phone numbers', error);
 			} finally {
 				loading.value = false;
 			}
@@ -91,6 +101,7 @@ export default defineComponent({
 					}));
 				} catch (error) {
 					console.error('Error fetching numbers:', error);
+					showErrorToast('Failed to search available numbers', error);
 				}
 			}
 		};
@@ -104,8 +115,11 @@ export default defineComponent({
 				};
 				try {
 					await phoneNumberStore.purchasePhoneNumber(params);
+					showSuccessToast('Phone number purchased', `${ params.phoneNumber } has been added to your account.`);
+					selectedPhoneNumber.value = {} as ApiV1PhoneNumberAvailableNumbersGet200ResponseInner;
 				} catch(error) {
 					console.error('Error purchasing number:', error);
+					showErrorToast('Failed to purchase phone number', error);
 				} finally {
 					loading.value = false;
 				}
@@ -117,8 +131,18 @@ export default defineComponent({
 		};
 
 		const deletePhoneNumber = async (phoneNumberId: number) => {
-			console.log('DELETED:', phoneNumberId);
+			loading.value = true;
+			try {
+				await phoneNumberStore.deletePhoneNumber(phoneNumberId);
+			} catch(error) {
+				console.error('Failed to delete phone number:', error);
+				showErrorToast('Failed to delete phone number', error);
+			} finally {
+				getPhoneNumbers();
+			}
 		};
+
+		const phoneNumberRowClass = (data: PhoneNumber) => (data.isActive ? '' : 'opacity-60 text-500');
 
 		const confirmDeleteNumber = (phoneNumberId: number) => {
 			confirm.require({
@@ -144,6 +168,7 @@ export default defineComponent({
 			availablePhoneNumbers,
 			purchaseNumber,
 			confirmDeleteNumber,
+			phoneNumberRowClass,
 		};
 	},
 	created() {

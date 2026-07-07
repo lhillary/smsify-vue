@@ -81,6 +81,7 @@ import { useUserStore } from '../../stores/user';
 import Spinner from '../../components/general/Loader.vue';
 import { useRouter } from 'vue-router';
 import { routeNames } from '@/router/route-names';
+import { getApiErrorMessage } from '@/utils/toast';
 
 export default defineComponent({
 	name: 'Unauthorized',
@@ -101,7 +102,7 @@ export default defineComponent({
 				router.push({ path: '/' });
 			} catch(error) {
 				console.error('Login failed:', error);
-				errorMessage.value = 'Failed to login. Check your credentials.';
+				errorMessage.value = getApiErrorMessage(error, 'Failed to login. Check your credentials.');
 			} finally {
 				loading.value = false;
 			}

@@ -1,6 +1,5 @@
 <template>
 	<spinner v-if="loading"></spinner>
-	<Toast />
 	<ConfirmDialog></ConfirmDialog>
 	<ScrollPanel style="width: 100%; height: 78vh">
 		<div class="surface-section px-6 py-5">
@@ -61,6 +60,7 @@ import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
 import { useUserStore } from '@/stores/user';
 import { TWILIO_AUTHORIZE_URL } from '@/constants/external-urls';
+import { getApiErrorMessage } from '@/utils/toast';
 import Spinner from '../../components/general/Loader.vue';
 
 export default defineComponent({
@@ -124,7 +124,7 @@ export default defineComponent({
 						toast.add({
 							severity: 'error',
 							summary: 'Disconnect failed',
-							detail: 'Something went wrong. Please try again.',
+							detail: getApiErrorMessage(error),
 							life: 5000,
 						});
 					} finally {

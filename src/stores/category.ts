@@ -25,8 +25,10 @@ export const useCategoryStore = defineStore('category', {
 			return new Promise((resolve, reject) => {
 				categoryApi.apiV1CategoryByCampaignCampaignIdGet(campaignId)
 					.then((response) => {
-						this.currentCampaignCategories = response.data;
-						resolve(response.data);
+						// The API soft-deletes and still returns deleted rows.
+						const categories = response.data.filter((category) => !category.deletedAt);
+						this.currentCampaignCategories = categories;
+						resolve(categories);
 					})
 					.catch((error) => {
 						console.error('Failed fetching campaign categories:', error);

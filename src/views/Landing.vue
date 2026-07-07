@@ -9,7 +9,7 @@
 					<div class="flex justify-content-between mb-3">
 						<div>
 							<span class="block text-500 font-medium mb-3">Campaigns</span>
-							<div class="text-900 font-medium text-xl">152</div>
+							<div class="text-900 font-medium text-xl">{{ campaignCount ?? '—' }}</div>
 						</div>
 						<div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
 							<i class="pi pi-megaphone text-blue-500 text-xl"></i>
@@ -28,7 +28,7 @@
 					<div class="flex justify-content-between mb-3">
 						<div>
 							<span class="block text-500 font-medium mb-3">Phone Numbers</span>
-							<div class="text-900 font-medium text-xl">152</div>
+							<div class="text-900 font-medium text-xl">{{ phoneNumberCount ?? '—' }}</div>
 						</div>
 						<div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
 							<i class="pi pi-phone text-blue-500 text-xl"></i>
@@ -47,20 +47,40 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, onMounted } from 'vue';
 import { routeNames } from '@/router/route-names';
 import { useUserStore } from '@/stores/user';
+import { useCampaignsStore } from '@/stores/campaign';
+import { usePhoneNumberStore } from '@/stores/phoneNumbers';
+import { showErrorToast } from '@/utils/toast';
 
 export default defineComponent({
 	name: 'Landing',
 	setup() {
 		const userStore = useUserStore();
+		const campaignStore = useCampaignsStore();
+		const phoneNumberStore = usePhoneNumberStore();
+
 		const userName = computed(() => userStore.$state.user?.username);
+		// Null until the fetch resolves; the template shows a placeholder in the meantime.
+		const campaignCount = computed(() => campaignStore.$state.userCampaigns?.length ?? null);
+		const phoneNumberCount = computed(() => phoneNumberStore.$state.userPhoneNumbers?.length ?? null);
+
+		onMounted(() => {
+			campaignStore.fetchAllCampaigns().catch((error) => {
+				showErrorToast('Failed to load campaigns', error);
+			});
+			phoneNumberStore.fetchAllPhoneNumbers().catch((error) => {
+				showErrorToast('Failed to load phone numbers', error);
+			});
+		});
 
 		return {
 			routeNames,
 			userStore,
 			userName,
+			campaignCount,
+			phoneNumberCount,
 		};
 	},
 });

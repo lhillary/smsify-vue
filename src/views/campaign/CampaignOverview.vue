@@ -7,15 +7,18 @@
 				:key="index"
 				class="col-12 md:col-6 xl:col-4 p-3"
 			>
-				<div class="surface-card shadow-2 border-round p-4">
+				<div class="surface-card shadow-2 border-round p-4" :class="{ 'opacity-60': !isCampaignActive(campaign) }">
 					<div class="flex border-bottom-1 surface-border pb-4">
 						<div class="mr-3" style="width: 70px; height: 70px">
-							<Button icon="pi pi-megaphone" rounded></Button>
+							<Button icon="pi pi-megaphone" rounded :severity="isCampaignActive(campaign) ? undefined : 'secondary'"></Button>
 						</div>
 						<div class="flex flex-column align-items-start">
-							<span class="text-xl text-900 font-medium mb-1">{{ campaign.name }}</span>
-							<span class="text-600 font-medium mb-2">{{ campaign.description }}</span>
-							<span class="bg-blue-50 text-blue-400 border-round inline-flex py-1 px-2 text-sm">{{ campaign.status }}</span>
+							<span class="text-xl font-medium mb-1" :class="isCampaignActive(campaign) ? 'text-900' : 'text-500'">{{ campaign.name }}</span>
+							<span class="font-medium mb-2" :class="isCampaignActive(campaign) ? 'text-600' : 'text-400'">{{ campaign.description }}</span>
+							<span
+								class="border-round inline-flex py-1 px-2 text-sm"
+								:class="isCampaignActive(campaign) ? 'bg-blue-50 text-blue-400' : 'surface-200 text-500'"
+							>{{ campaign.status }}</span>
 						</div>
 					</div>
 					<div class="flex justify-content-between pt-4">
@@ -47,6 +50,9 @@ import { useRouter } from 'vue-router';
 import { routeNames } from '@/router/route-names';
 import { useCampaignsStore } from '@/stores/campaign';
 import { useConfirm } from 'primevue/useconfirm';
+import { showErrorToast } from '@/utils/toast';
+import { isActiveStatus } from '@/utils/general';
+import { type Campaign } from '@/api-client';
 import Spinner from '../../components/general/Loader.vue';
 
 export default defineComponent({
@@ -65,6 +71,7 @@ export default defineComponent({
 				await campaignStore.fetchAllCampaigns();
 			} catch(error) {
 				console.error('Failed to fetch campaigns:', error);
+				showErrorToast('Failed to load campaigns', error);
 			} finally {
 				loading.value = false;
 			}
@@ -76,6 +83,9 @@ export default defineComponent({
 				await campaignStore.deleteCampaign(campaignId);
 			} catch(error) {
 				console.error('Failed to delete campaign:', error);
+				showErrorToast('Failed to delete campaign', error);
+			} finally {
+				getCampaigns();
 			}
 		};
 
@@ -86,6 +96,8 @@ export default defineComponent({
 		const goToCampaign = (campaignId: number) => {
 			router.push({ name: routeNames.campaignDetails, params: { campaignId: campaignId } });
 		};
+
+		const isCampaignActive = (campaign: Campaign) => isActiveStatus(campaign.status);
 
 		const confirmDeleteCampaign = (campaignId: number) => {
 			confirm.require({
@@ -111,6 +123,7 @@ export default defineComponent({
 			goToCampaign,
 			deleteCampaign,
 			confirmDeleteCampaign,
+			isCampaignActive,
 		};
 	},
 	created() {

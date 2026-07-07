@@ -35,28 +35,31 @@
 
 <script lang=ts>
 import { defineComponent, ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { routeNames } from '@/router/route-names';
 import { usePhoneNumberStore } from '@/stores/phoneNumbers';
 import { useCampaignsStore } from '@/stores/campaign';
 import { type ApiV1CampaignPostRequest } from '@/api-client';
+import { showErrorToast } from '@/utils/toast';
 import Spinner from '../../components/general/Loader.vue';
 
 export default defineComponent({
 	name: 'CampaignCreate',
 	components: { Spinner },
 	setup() {
+		const router = useRouter();
 		const campaignStore = useCampaignsStore();
 		const phoneNumberStore = usePhoneNumberStore();
 		const phoneNumbersLoading = ref(false);
 		const createLoading = ref(false);
 		const selectedPhoneNumber = ref();
 		const phoneNumbers = computed(() => usePhoneNumberStore().$state.userPhoneNumbers);
-		const phoneNumberOptions = phoneNumbers.value ? phoneNumbers.value.map((phoneNumber) => {
+		const phoneNumberOptions = computed(() => phoneNumbers.value ? phoneNumbers.value.map((phoneNumber) => {
 			return {
 				name: phoneNumber.phoneNumber,
 				id: phoneNumber.phoneNumberId,
 			};
-		}) : [];
+		}) : []);
 		const name = ref('');
 		const description = ref('');
 
@@ -66,6 +69,7 @@ export default defineComponent({
 				await phoneNumberStore.fetchAllPhoneNumbers();
 			} catch(error) {
 				console.error('Failed to fetch phone numbers:', error);
+				showErrorToast('Failed to load phone numbers', error);
 			} finally {
 				phoneNumbersLoading.value = false;
 			}
@@ -83,9 +87,11 @@ export default defineComponent({
 			}
 
 			try {
-				await campaignStore.createCampaign(params);
+				const campaign = await campaignStore.createCampaign(params);
+				router.push({ name: routeNames.campaignDetails, params: { campaignId: campaign.campaignId } });
 			} catch(error) {
-				console.error('Failed to fetch contacts:', error);
+				console.error('Failed to create campaign:', error);
+				showErrorToast('Failed to create campaign', error);
 			} finally {
 				createLoading.value = false;
 			}

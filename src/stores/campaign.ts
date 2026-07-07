@@ -27,8 +27,10 @@ export const useCampaignsStore = defineStore('campaign', {
 			return new Promise((resolve, reject) => {
 				campaignsApi.apiV1CampaignGet()
 					.then((response) => {
-						this.userCampaigns = response.data;
-						resolve(response.data);
+						// The API soft-deletes and still returns deleted rows.
+						const campaigns = response.data.filter((campaign) => !campaign.deletedAt);
+						this.userCampaigns = campaigns;
+						resolve(campaigns);
 					})
 					.catch((error) => {
 						console.error('Failed fetching campaigns:', error);

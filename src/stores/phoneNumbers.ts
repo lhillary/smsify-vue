@@ -40,8 +40,10 @@ export const usePhoneNumberStore = defineStore('phoneNumber', {
 			return new Promise((resolve, reject) => {
 				phoneNumbersApi.apiV1PhoneNumberUserNumbersGet()
 					.then((response) => {
-						this.userPhoneNumbers = response.data;
-						resolve(response.data);
+						// The API soft-deletes and still returns deleted rows.
+						const phoneNumbers = response.data.filter((phoneNumber) => !phoneNumber.deletedAt);
+						this.userPhoneNumbers = phoneNumbers;
+						resolve(phoneNumbers);
 					})
 					.catch((error) => {
 						console.error('Failed fetching phone numbers:', error);

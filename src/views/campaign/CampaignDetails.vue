@@ -35,7 +35,7 @@
 		<div class="mb-3 flex justify-content-between">
 			<div class="text-base font-medium col-12">
 				<div class="text-900 font-medium text-l mb-1">Campaign Status</div>
-				<Tag :value="currentCampaign?.status"></Tag>
+				<Tag :value="currentCampaign?.status" :severity="isCampaignActive ? 'success' : 'secondary'"></Tag>
 			</div>
 		</div>
 		<div v-if="editMode" class="col-12">
@@ -139,7 +139,6 @@
 			</div>
 		</div>
 		<DynamicDialog />
-		<Toast />
 		<ConfirmDialog></ConfirmDialog>
 	</ScrollPanel>
 </template>
@@ -160,6 +159,8 @@ import DynamicDialog from 'primevue/dynamicdialog';
 import ModalFooter from '@/components/modal/ModalFooter.vue';
 import { ApiV1ContactPostRequest, ApiV1CampaignUpdateCampaignIdPutRequest, ApiV1CategoryPostRequest, PhoneNumber, ApiV1CategoryUpdateCategoryIdPutRequest } from '@/api-client';
 import { formatPhoneNumberForDisplay, normalizePhoneNumber } from '@/utils/phoneNumberConfig';
+import { isActiveStatus } from '@/utils/general';
+import { showErrorToast } from '@/utils/toast';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 
@@ -201,6 +202,7 @@ export default defineComponent({
 
 		const phoneNumbers = computed(() => usePhoneNumberStore().$state.userPhoneNumbers);
 		const currentCampaign = computed(() => useCampaignsStore().$state.currentCampaign);
+		const isCampaignActive = computed(() => isActiveStatus(currentCampaign.value?.status));
 		const campaignContacts = computed(() => useContactsStore().$state.campaignContacts);
 		const campaignCategories = computed(() => useCategoryStore().$state.currentCampaignCategories);
 		const phoneNumberOptions = computed(() => {
@@ -216,6 +218,7 @@ export default defineComponent({
 				await phoneNumberStore.fetchAllPhoneNumbers();
 			} catch(error) {
 				console.error('Failed to fetch phone numbers:', error);
+				showErrorToast('Failed to load phone numbers', error);
 			} finally {
 				phoneNumbersLoading.value = false;
 			}
@@ -225,9 +228,9 @@ export default defineComponent({
 			currentCampaignLoading.value = true;
 			try {
 				await campaignStore.fetchCampaignById(campaignId);
-				
 			} catch(error) {
 				console.error('Failed to fetch campaign:', error);
+				showErrorToast('Failed to load campaign', error);
 			} finally {
 				currentCampaignLoading.value = false;
 			}
@@ -239,6 +242,7 @@ export default defineComponent({
 				await contactsStore.fetchCampaignContacts(campaignId);
 			} catch(error) {
 				console.error('Failed to fetch contacts:', error);
+				showErrorToast('Failed to load contacts', error);
 			} finally {
 				contactsLoading.value = false;
 			}
@@ -250,6 +254,7 @@ export default defineComponent({
 				await categoryStore.getCategoriesByCampaign(campaignId);
 			} catch(error) {
 				console.error('Failed to fetch categories:', error);
+				showErrorToast('Failed to load categories', error);
 			} finally {
 				categoriesLoading.value = false;
 			}
@@ -260,6 +265,7 @@ export default defineComponent({
 				await contactsStore.createContact(options);
 			} catch(error) {
 				console.error('Failed to create contact:', error);
+				showErrorToast('Failed to add contact', error);
 			} finally {
 				getContacts();
 			}
@@ -318,9 +324,11 @@ export default defineComponent({
 					name: contact.name,
 					phoneNumber: contact.phoneNumber,
 				});
-				getContacts();
 			} catch (error) {
 				console.error('Failed to update contact:', error);
+				showErrorToast('Failed to update contact', error);
+			} finally {
+				getContacts();
 			}
 		};
 
@@ -330,6 +338,7 @@ export default defineComponent({
 				await contactsStore.deleteContact(contactId);
 			} catch(error) {
 				console.error('Failed to delete contact:', error);
+				showErrorToast('Failed to delete contact', error);
 			} finally {
 				getContacts();
 			}
@@ -363,6 +372,7 @@ export default defineComponent({
 				await campaignStore.updateCampaign(campaignId, params);
 			} catch(error) {
 				console.error('Failed to update campaign:', error);
+				showErrorToast('Failed to update campaign', error);
 			} finally {
 				getCurrentCampaign();
 			}
@@ -394,7 +404,8 @@ export default defineComponent({
 			try {
 				await categoryStore.createCategory(params);
 			} catch (error) {
-				console.error('Failed to update campaign:', error);
+				console.error('Failed to create category:', error);
+				showErrorToast('Failed to create category', error);
 			} finally {
 				getCategories();
 			}
@@ -460,6 +471,7 @@ export default defineComponent({
 				await categoryStore.deleteCategory(categoryId);
 			} catch(error) {
 				console.error('Failed to delete category:', error);
+				showErrorToast('Failed to delete category', error);
 			} finally {
 				getCategories();
 			}
@@ -473,7 +485,8 @@ export default defineComponent({
 			try {
 				await categoryStore.updateCategory(categoryId, params);
 			} catch (error) {
-				console.error('Failed to update campaign:', error);
+				console.error('Failed to update category:', error);
+				showErrorToast('Failed to update category', error);
 			} finally {
 				getCategories();
 			}
@@ -500,6 +513,7 @@ export default defineComponent({
 			contactsLoading,
 			categoriesLoading,
 			currentCampaign,
+			isCampaignActive,
 			active,
 			tabItems,
 			toggleEditMode,

@@ -50,6 +50,7 @@ import { usePhoneNumberStore } from '@/stores/phoneNumbers';
 import { useSmsStore } from '@/stores/sms';
 import { useRoute } from 'vue-router';
 import { ApiV1SmsSendBulkPostRequest } from '@/api-client';
+import { showErrorToast, showSuccessToast } from '@/utils/toast';
 import Spinner from '../../components/general/Loader.vue';
 
 export default defineComponent({
@@ -85,6 +86,7 @@ export default defineComponent({
 				await phoneNumberStore.fetchAllPhoneNumbers();
 			} catch(error) {
 				console.error('Failed to fetch phone numbers:', error);
+				showErrorToast('Failed to load phone numbers', error);
 			} finally {
 				phoneNumbersLoading.value = false;
 			}
@@ -94,9 +96,9 @@ export default defineComponent({
 			currentCampaignLoading.value = true;
 			try {
 				await campaignStore.fetchCampaignById(campaignId);
-				
 			} catch(error) {
 				console.error('Failed to fetch campaign:', error);
+				showErrorToast('Failed to load campaign', error);
 			} finally {
 				currentCampaignLoading.value = false;
 			}
@@ -109,11 +111,12 @@ export default defineComponent({
 				messageContent: message.value,
 				twilioNumber: findCampaignPhoneNumber(),
 			};
-			console.log(params);
 			try {
 				await smsStore.sendBulkSMS(params);
+				showSuccessToast('Message sent', 'Your message is on its way to your campaign contacts.');
 			} catch (error) {
 				console.error('Failed to send bulk SMS:', error);
+				showErrorToast('Failed to send message', error);
 			} finally {
 				loading.value = false;
 			}

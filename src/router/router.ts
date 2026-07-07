@@ -11,6 +11,9 @@ import CampaignResults from '@/views/campaign/CampaignResults.vue';
 import PhoneNumberDetails from '@/views/phoneNumber/PhoneNumberDetails.vue';
 import Landing from '@/views/Landing.vue';
 import UserProfile from '@/views/user/Profile.vue';
+import Settings from '@/views/user/Settings.vue';
+import TwilioCallback from '@/views/twilio/TwilioCallback.vue';
+import TermsAndConditions from '@/views/TermsAndConditions.vue';
 import { authGuard } from '@/router/guards';
 import { routeNames } from '@/router/route-names';
 
@@ -75,7 +78,27 @@ const routes: Array<RouteRecordRaw> = [
 				component: UserProfile,
 				meta: { requiresAuth: true },
 			},
+			{
+				path: '/settings',
+				name: routeNames.settings,
+				component: Settings,
+				meta: { requiresAuth: true },
+			},
 		],
+	},
+	{
+		// Twilio's Connect App redirects here with ?AccountSid=... or ?error=...
+		// Deliberately not auth-guarded: if the JWT expired while the user was on
+		// Twilio's site, the page itself shows a "log back in and retry" message
+		// instead of silently bouncing them to the login screen.
+		path: '/twilio/callback',
+		name: routeNames.twilioCallback,
+		component: TwilioCallback,
+	},
+	{
+		path: '/terms-and-conditions',
+		name: routeNames.termsAndConditions,
+		component: TermsAndConditions,
 	},
 	{
 		path: '/unauthorized',

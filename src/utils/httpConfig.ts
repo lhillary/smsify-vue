@@ -1,5 +1,6 @@
 import { BASE_API_URL } from '@/constants/external-urls';
 import Cookies from 'js-cookie';
+import axios, { AxiosResponse } from 'axios';
 import { 
 	Configuration, 
 	UsersApi, 
@@ -30,3 +31,13 @@ export const getSMSApi = () => new SMSApi(createApiConfiguration());
 export const updateAccessToken = (token: string): void => {
 	Cookies.set('token', token, { expires: 1 });
 };
+
+// Twilio Connect endpoints. These are not part of the generated client yet,
+// so they are called directly with the same base URL and bearer token.
+const authHeaders = () => ({ Authorization: `Bearer ${Cookies.get('token') || ''}` });
+
+export const postTwilioConnect = (accountSid: string): Promise<AxiosResponse> =>
+	axios.post(`${BASE_API_URL}/api/v1/twilio-connect`, { accountSid }, { headers: authHeaders() });
+
+export const deleteTwilioConnect = (): Promise<AxiosResponse> =>
+	axios.delete(`${BASE_API_URL}/api/v1/twilio-connect`, { headers: authHeaders() });

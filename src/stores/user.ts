@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import Cookies from 'js-cookie';
-import { getUsersApi, updateAccessToken } from '../utils/httpConfig';
+import { getUsersApi, updateAccessToken, postTwilioConnect, deleteTwilioConnect } from '../utils/httpConfig';
 import { ApiV1UserLoginPost200ResponseUser, ApiV1UserUpdatePutRequest, type ApiV1UserLoginPost200Response, type ApiV1UserRegisterPost201Response } from '@/api-client';
 
 const usersApi = getUsersApi();
@@ -15,6 +15,8 @@ export const useUserStore = defineStore('user', {
 	},
 	getters: {
 		isLoggedIn: (state) => !!state.token,
+		connectedAccountSid: (state) => state.user?.connectedAccountSid ?? null,
+		isTwilioConnected: (state) => !!state.user?.connectedAccountSid,
 	},
 	actions: {
 		login(email: string, password: string): Promise<ApiV1UserLoginPost200Response> {
@@ -63,6 +65,21 @@ export const useUserStore = defineStore('user', {
 						reject(error);
 					});
 			});
+		},
+		setConnectedAccountSid(accountSid: string | null) {
+			if (!this.user) {
+				return;
+			}
+			this.user = { ...this.user, connectedAccountSid: accountSid };
+			localStorage.setItem('user', JSON.stringify(this.user));
+		},
+		async connectTwilio(accountSid: string): Promise<void> {
+			await postTwilioConnect(accountSid);
+			this.setConnectedAccountSid(accountSid);
+		},
+		async disconnectTwilio(): Promise<void> {
+			await deleteTwilioConnect();
+			this.setConnectedAccountSid(null);
 		},
 		logout() {
 			this.token = undefined;

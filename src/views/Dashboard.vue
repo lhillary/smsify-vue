@@ -47,6 +47,26 @@
 								<span class="font-medium">Profile</span>
 							</router-link>
 						</li>
+						<li>
+							<router-link 
+								:to="{ name: routeNames.settings }"
+								v-ripple 
+								class="flex align-items-center cursor-pointer p-3 hover:bg-cyan-900 border-round text-bluegray-100 hover:text-bluegray-50 transition-duration-150 transition-colors p-ripple"
+							>
+								<i class="pi pi-cog mr-2"></i>
+								<span class="font-medium">Settings</span>
+							</router-link>
+						</li>
+						<li>
+							<router-link 
+								:to="{ name: routeNames.termsAndConditions }"
+								v-ripple 
+								class="flex align-items-center cursor-pointer p-3 hover:bg-cyan-900 border-round text-bluegray-100 hover:text-bluegray-50 transition-duration-150 transition-colors p-ripple"
+							>
+								<i class="pi pi-file mr-2"></i>
+								<span class="font-medium">Terms &amp; Conditions</span>
+							</router-link>
+						</li>
 					</ul>
 				</div>
 			</div>

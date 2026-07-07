@@ -367,6 +367,12 @@ export interface ApiV1UserLoginPost200ResponseUser {
      * @memberof ApiV1UserLoginPost200ResponseUser
      */
     'tierId'?: number;
+    /**
+     * The Twilio Account SID the user linked via our Connect App, or null if not connected
+     * @type {string}
+     * @memberof ApiV1UserLoginPost200ResponseUser
+     */
+    'connectedAccountSid'?: string | null;
 }
 /**
  * 

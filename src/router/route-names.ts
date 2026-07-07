@@ -11,4 +11,7 @@ export enum routeNames {
 	phoneNumberDetails = 'phoneNumberDetails',
 	userProfile = 'userProfile',
 	landing = 'landing',
+	settings = 'settings',
+	twilioCallback = 'twilioCallback',
+	termsAndConditions = 'termsAndConditions',
 }

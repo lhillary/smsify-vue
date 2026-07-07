@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router/router';
+import { setupHttpInterceptors } from './utils/interceptors';
 import PrimeVue from 'primevue/config';
 import DialogService from 'primevue/dialogservice';
 import ToastService from 'primevue/toastservice';
@@ -42,6 +43,7 @@ app.use(createPinia());
 
 app.use(router);
 app.use(PrimeVue, { ripple: true });
+setupHttpInterceptors();
 app.use(DialogService);
 app.use(ToastService);
 app.use(ConfirmationService);

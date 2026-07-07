@@ -36,9 +36,15 @@ export const usePhoneNumberStore = defineStore('phoneNumber', {
 					});
 			});
 		},
-		fetchAllPhoneNumbers(): Promise<PhoneNumber[]> {
+		/**
+		 * `sync: true` asks the backend to reconcile with the connected Twilio
+		 * account: import pre-existing numbers, revive soft-deleted rows, and
+		 * repair webhooks. Used when landing on the numbers page; plain fetches
+		 * elsewhere skip it since it's a heavier call.
+		 */
+		fetchAllPhoneNumbers(sync = false): Promise<PhoneNumber[]> {
 			return new Promise((resolve, reject) => {
-				phoneNumbersApi.apiV1PhoneNumberUserNumbersGet()
+				phoneNumbersApi.apiV1PhoneNumberUserNumbersGet(sync ? { params: { sync: true } } : undefined)
 					.then((response) => {
 						// The API soft-deletes and still returns deleted rows.
 						const phoneNumbers = response.data.filter((phoneNumber) => !phoneNumber.deletedAt);

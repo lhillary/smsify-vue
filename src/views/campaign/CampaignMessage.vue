@@ -17,8 +17,14 @@
 	<ScrollPanel style="width: 100%; height: 78vh">
 		<div class="text-900 font-medium text-xl mb-3">Send A Message</div>
 		<p class="m-0 mb-4 p-0 text-600 line-height-3 mr-3">Send out a bulk SMS message to your campaign contacts.</p>
-		<p v-if="currentCampaign?.phoneNumberId" class="m-0 mb-4 p-0 text-600 line-height-3 mr-3">Note: Please remember that you are sending messages from this phone number: </p>
-		<p v-else class="text-red-500 font-italic m-0 mb-4 p-0 text-600 line-height-3 mr-3">Messaging is disabled. You do not currently have a phone number associated with this campaign.</p>
+		<p v-if="!currentCampaign?.phoneNumberId" class="text-red-500 font-italic m-0 mb-4 p-0 text-600 line-height-3 mr-3">Messaging is disabled. You do not currently have a phone number associated with this campaign.</p>
+		<p v-else-if="campaignPhoneNumber && !campaignPhoneNumber.isActive" class="text-red-500 font-italic m-0 mb-4 p-0 text-600 line-height-3 mr-3">
+			Messaging is disabled. The phone number associated with this campaign ({{ campaignPhoneNumber.phoneNumber }}) is no longer active on your connected Twilio account. Please associate an active phone number with this campaign.
+		</p>
+		<p v-else class="m-0 mb-4 p-0 text-600 line-height-3 mr-3">
+			Note: Please remember that you are sending messages from this phone number:
+			<span class="font-bold text-cyan-800">{{ campaignPhoneNumber?.phoneNumber }}</span>
+		</p>
 		<div class="surface-card p-4 shadow-2 border-round">
 			<div class="grid formgrid p-fluid">
 				<div class="field mb-4 col-12">
@@ -26,7 +32,7 @@
 					<Editor 
 						v-on:text-change="parseText" 
 						editorStyle="height: 320px" 
-						:readonly="!currentCampaign?.phoneNumberId" 
+						:readonly="!canSend" 
 					>
 						<template v-slot:toolbar>
 							<span class="ql-formats">
@@ -34,7 +40,7 @@
 						</template>
 					</Editor>
 					<div class="col-12">
-						<Button @click="sendBulkSMS" label="Send Message" class="w-auto mt-3" icon="pi pi-send" :disabled="!currentCampaign?.phoneNumberId"></Button>
+						<Button @click="sendBulkSMS" label="Send Message" class="w-auto mt-3" icon="pi pi-send" :disabled="!canSend"></Button>
 					</div>
 				</div>
 			</div>
@@ -65,6 +71,12 @@ export default defineComponent({
 
 		const currentCampaign = computed(() => useCampaignsStore().$state.currentCampaign);
 		const phoneNumbers = computed(() => usePhoneNumberStore().$state.userPhoneNumbers);
+		const campaignPhoneNumber = computed(() => {
+			return phoneNumbers.value?.find(phone => phone.phoneNumberId === currentCampaign.value?.phoneNumberId) ?? null;
+		});
+		// Sending requires a From number that the connected Twilio account still
+		// owns; the sendBulk endpoint rejects inactive numbers with a 400.
+		const canSend = computed(() => !!campaignPhoneNumber.value?.isActive);
 
 		const loading = ref(false);
 		const phoneNumbersLoading = ref(false);
@@ -109,7 +121,7 @@ export default defineComponent({
 			const params: ApiV1SmsSendBulkPostRequest = {
 				campaignId: campaignId,
 				messageContent: message.value,
-				twilioNumber: findCampaignPhoneNumber(),
+				twilioNumber: campaignPhoneNumber.value?.phoneNumber ?? '',
 			};
 			try {
 				await smsStore.sendBulkSMS(params);
@@ -120,16 +132,6 @@ export default defineComponent({
 			} finally {
 				loading.value = false;
 			}
-		};
-
-		const findCampaignPhoneNumber = (): string => {
-			if (phoneNumbers.value) {
-				const foundPhone = phoneNumbers.value.find(phone => phone.phoneNumberId === currentCampaign.value?.phoneNumberId);
-				if (foundPhone) {
-					return foundPhone.phoneNumber;
-				}
-			}
-			return '';
 		};
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,6 +145,8 @@ export default defineComponent({
 			smsStore,
 			currentCampaign,
 			phoneNumbers,
+			campaignPhoneNumber,
+			canSend,
 			loading,
 			currentCampaignLoading,
 			phoneNumbersLoading,

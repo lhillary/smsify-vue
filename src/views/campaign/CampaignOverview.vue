@@ -27,11 +27,14 @@
 					</div>
 				</div>
 			</div>
-			<div class="p-5 flex flex-column flex-auto justify-content-center align-items-start">
+			<div
+				v-if="campaigns && campaigns.length > 0"
+				class="p-5 flex flex-column flex-auto justify-content-center align-items-start"
+			>
 				<Button @click="goToCreateCampaign" icon="pi pi-plus" rounded></Button>
 			</div>
 			<div 
-				v-if="!campaigns || campaigns.length < 1"
+				v-else
 				class="p-5 flex flex-column flex-auto justify-content-center align-items-start"
 			>
 				<span class="text-xl text-900 font-medium mb-1 p-2">

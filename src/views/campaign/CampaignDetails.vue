@@ -59,7 +59,7 @@
 					<template v-if="!currentCampaign?.phoneNumberId">
 						<div class="field">
 							<label for="phone" class="font-medium mb-2">Phone Number</label>
-							<Dropdown v-model="selectedPhoneNumber" :options="phoneNumberOptions" optionLabel="label" optionValue="value" :filter="true" filterBy="label" :showClear="true"></Dropdown>
+							<Dropdown v-model="selectedPhoneNumber" :options="phoneNumberOptions" optionLabel="label" optionValue="value" optionDisabled="disabled" :filter="true" filterBy="label" :showClear="true"></Dropdown>
 							<Button @click="associatePhoneNumber" label="Add Phone Number" :disabled="!selectedPhoneNumber" class="w-auto mt-3"></Button>
 							<p class="m-0 mb-4 pt-3 text-600 line-height-3 mr-3">In order to send messages via your campaign, you will need to associate it with a phone number. If you have not yet purchased a phone number, that's okay! You can always come back and add it.</p>
 						</div>
@@ -205,10 +205,13 @@ export default defineComponent({
 		const isCampaignActive = computed(() => isActiveStatus(currentCampaign.value?.status));
 		const campaignContacts = computed(() => useContactsStore().$state.campaignContacts);
 		const campaignCategories = computed(() => useCategoryStore().$state.currentCampaignCategories);
+		// Inactive numbers aren't owned by the connected Twilio account anymore,
+		// so they can't be used as a From number — shown greyed out, unselectable.
 		const phoneNumberOptions = computed(() => {
 			return phoneNumbers.value ? phoneNumbers.value.map(phoneNumber => ({
 				label: phoneNumber.phoneNumber,
 				value: phoneNumber,
+				disabled: !phoneNumber.isActive,
 			})) : [];
 		});
 

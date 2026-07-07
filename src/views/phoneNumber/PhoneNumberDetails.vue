@@ -78,10 +78,12 @@ export default defineComponent({
 		const availablePhoneNumbers = ref([] as ApiV1PhoneNumberAvailableNumbersGet200ResponseInner[]);
 		const confirm = useConfirm();
 
-		const getPhoneNumbers = async () => {
+		// On page load we sync with Twilio so pre-existing numbers on a newly
+		// connected account show up; later refreshes (e.g. after delete) skip it.
+		const getPhoneNumbers = async (sync = false) => {
 			loading.value = true;
 			try {
-				await phoneNumberStore.fetchAllPhoneNumbers();
+				await phoneNumberStore.fetchAllPhoneNumbers(sync);
 			} catch(error) {
 				console.error('Failed to fetch phone numbers:', error);
 				showErrorToast('Failed to load phone numbers', error);
@@ -172,7 +174,7 @@ export default defineComponent({
 		};
 	},
 	created() {
-		this.getPhoneNumbers();
+		this.getPhoneNumbers(true);
 	},
 });
 </script>
